@@ -1,4 +1,6 @@
 import tensorflow as tf
+import numpy as np
+from tensorflow import keras
 import json
 import os
 import sys
@@ -61,10 +63,25 @@ if __name__ == '__main__':
     tf.data.experimental.save(tf_dataset_test, 'cache/ds_test.tf')
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
-    model = LeNet
-    model_built = model.build(data_shape=dataset_train.data_signature_output,
-                              label_shape=dataset_train.label_signature_output)
-    model_built.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
+
+
+    base_model = tf.keras.applications.ResNet50(
+        include_top=False,
+        weights="imagenet",
+        input_shape=(image_height, image_weight, color_channels)
+    )
+
+    base_model.trainable = False
+    inputs = keras.Input(shape=(image_height, image_weight, color_channels))
+    x = base_model(inputs, training=False)
+    x = tf.keras.layers.GlobalAveragePooling2D()(x)
+    outputs = keras.layers.Dense(1)(x)
+    model = keras.Model(inputs, outputs)
+    
+    #model_built = model.build(data_shape=dataset_train.data_signature_output,
+    #
+    #                           label_shape=dataset_train.label_signature_output)
+    model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
 
     early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy',
                                                       patience=3,
@@ -85,9 +102,9 @@ if __name__ == '__main__':
         filepath=checkpoint_path,
         verbose=1,
         save_freq=no_points_train // batch_size * 25)
-    model_built.save_weights(checkpoint_path.format(epoch=0))
+    model.save_weights(checkpoint_path.format(epoch=0))
 
-    history = model_built.fit(tf_dataset_train,
+    model.fit(tf_dataset_train,
                               epochs=no_epochs,
                               batch_size=batch_size,
                               steps_per_epoch=no_points_train // batch_size,
@@ -96,7 +113,7 @@ if __name__ == '__main__':
                               callbacks=[tensorboard, save_every_epoch],
                               )
 
-    model_built.save('training/model/trained_model.h5')
+    model.save('training/model/trained_model.h5')
 
-    with open('training/results/training_report.json', 'w', encoding='utf-8') as f:
-        json.dump(history.history, f, ensure_ascii=False, indent=4)
+    #with open('training/results/training_report.json', 'w', encoding='utf-8') as f:
+    #    json.dump(history.history, f, ensure_ascii=False, indent=4)
