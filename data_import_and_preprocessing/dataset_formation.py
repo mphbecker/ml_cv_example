@@ -46,10 +46,10 @@ class ImageDataExtractor:
         filename = data_point.path_to_data
         img = cv2.imread(filename)
         img_preprocessed = self.preprocess_image(img)
-        return np.expand_dims(img_preprocessed, axis=-1)
+        return img_preprocessed #np.expand_dims(img_preprocessed, axis=-1)
 
     def preprocess_image(self, img):
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        #img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img = cv2.resize(img, (self.output_image_shape[0], self.output_image_shape[1]), interpolation=cv2.INTER_CUBIC)
         img = img / 255
         return img

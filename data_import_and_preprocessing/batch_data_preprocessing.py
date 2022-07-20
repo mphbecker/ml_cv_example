@@ -16,7 +16,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 class PrelimImageProcessor(ImageDataExtractor):
     def preprocess_image(self, img):
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        #img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         img = cv2.resize(img, (self.output_image_shape[0], self.output_image_shape[1]), interpolation=cv2.INTER_CUBIC)
         img = img / 255
         return img
@@ -44,9 +44,11 @@ class BatchDataProcessor:
             metadata = self.label_extractor.get_data(data_point)
             filename = data_point.datapoint_id
             fullname_img = os.path.join(self.save_path, filename + '.jpg')
+            #fullname_img = self.save_path + '/' + filename + '.jpg'
             cv2.imwrite(fullname_img, data)
 
             fullname_metadata = os.path.join(self.save_path, filename + '.json')
+            #fullname_metadata = self.save_path + '/' + filename + '.json'
             with open(fullname_metadata, 'w') as outfile:
                 json.dump(metadata, outfile, indent=4)
             pbar.update(1)
@@ -58,7 +60,7 @@ if __name__ == '__main__':
         params = yaml.safe_load(stream)
     image_height = params['data']['image_height']
     image_weight = params['data']['image_width']
-    color_channels = 1
+    color_channels = 3
     no_classes = params['data']['no_classes']
     no_epochs = params['training']['no_epochs']
     batch_size = params['training']['batch_size']
