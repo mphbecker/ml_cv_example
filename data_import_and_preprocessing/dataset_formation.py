@@ -70,7 +70,7 @@ class LabelExtractor:
             return label
 
     def extract_label(self, metadata):
-        label_int = metadata['labels']['animal']['value']
+        label_int = metadata['flow_regime']['parameters']['value']
         label_one_hot = self.one_hot_encoder[label_int]
         return label_one_hot
 

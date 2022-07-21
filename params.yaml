@@ -1,7 +1,7 @@
 data:
   image_width: 32
   image_height: 32
-  no_classes: 2
+  no_classes: 3
 training:
   no_epochs: 50
   batch_size: 512
