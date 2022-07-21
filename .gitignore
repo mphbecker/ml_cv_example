@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 /model
 /data/
-/data/
+data/
 /cache/
