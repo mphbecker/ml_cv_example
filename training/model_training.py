@@ -19,7 +19,7 @@ if __name__ == '__main__':
         params = yaml.safe_load(stream)
     image_height = params['data']['image_height']
     image_weight = params['data']['image_width']
-    color_channels = 1
+    color_channels = 3
     no_classes = params['data']['no_classes']
     no_epochs = params['training']['no_epochs']
     batch_size = params['training']['batch_size']
@@ -64,19 +64,21 @@ if __name__ == '__main__':
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
 
-
+    input_t = tf.keras.Input(shape=(image_height, image_weight, color_channels))
     base_model = tf.keras.applications.ResNet50(
         include_top=False,
         weights="imagenet",
-        input_shape=(image_height, image_weight, color_channels)
+        input_tensor=input_t
     )
 
-    base_model.trainable = False
-    inputs = keras.Input(shape=(image_height, image_weight, color_channels))
-    x = base_model(inputs, training=False)
-    x = tf.keras.layers.GlobalAveragePooling2D()(x)
-    outputs = keras.layers.Dense(1)(x)
-    model = keras.Model(inputs, outputs)
+    # Freeze all layers except the last block of ResNet50
+    for layer in base_model.layers[:143]:
+        layer.trainable = False
+
+    model = tf.keras.models.Sequential()
+    model.add(base_model)
+    model.add(tf.keras.layers.Flatten())
+    model.add(tf.keras.layers.Dense(3, activation='softmax'))
     
     #model_built = model.build(data_shape=dataset_train.data_signature_output,
     #
@@ -113,6 +115,7 @@ if __name__ == '__main__':
                               callbacks=[tensorboard, save_every_epoch],
                               )
 
+    model.summary()
     model.save('training/model/trained_model.h5')
 
     #with open('training/results/training_report.json', 'w', encoding='utf-8') as f:
